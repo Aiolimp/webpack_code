@@ -1,0 +1,13 @@
+.box1{
+    width: 200px;
+    height: 200px;
+    background-image: url(../../static/imgs/cc88fe13.jpg);
+    background-size: cover;
+}
+.box {
+  width: 200px;
+  height: 200px;
+  background-color: green;
+}
+
+.box4{width:200px;height:200px;background-color:blue}

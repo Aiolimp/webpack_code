@@ -3,7 +3,27 @@ const path = require('path'); // nodejs核心模块，专门用来处理路径�
 const ESLintPlugin = require('eslint-webpack-plugin');
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
+const CssMinimizerPlugin = require("css-minimizer-webpack-plugin");
 // 所有配置文件只能在node.js环境下运行，采用的模块化都是commonJs模块化
+
+function getStyleLoader(pre) {
+    return [
+        MiniCssExtractPlugin.loader, // 提取css成单独文件
+        "css-loader", // 将css资源编译成commonjs的模块到js中
+        {
+            loader: "postcss-loader",
+            options: {
+                postcssOptions: {
+                    plugins: [
+                        "postcss-preset-env", // 能解决大多数样式兼容性问题
+                    ],
+                },
+            },
+        },
+        pre,
+    ].filter(Boolean)
+}
+
 module.exports = {
     // 入口
     entry: "./src/main.js", // 相对路径
@@ -23,74 +43,19 @@ module.exports = {
             {
                 test: /\.css$/i, // 只检测.css文件
                 // loader: 'xxx' // 只能使用一个loader
-                use: [ // 执行顺序：从右到左（从上到下）,use可以使用多个loader
-                    MiniCssExtractPlugin.loader, // 提取css成单独文件
-                    "css-loader", // 将css资源编译成commonjs的模块到js中
-                    {
-                        loader: "postcss-loader",
-                        options: {
-                            postcssOptions: {
-                                plugins: [
-                                    "postcss-preset-env", // 能解决大多数样式兼容性问题
-                                ],
-                            },
-                        },
-                    },
-                ],
+                use: getStyleLoader(), // 执行顺序：从右到左（从上到下）,use可以使用多个loader
             },
             {
                 test: /\.less$/i,
-                use: [
-                    MiniCssExtractPlugin.loader,
-                    'css-loader',
-                    {
-                        loader: "postcss-loader",
-                        options: {
-                            postcssOptions: {
-                                plugins: [
-                                    "postcss-preset-env", // 能解决大多数样式兼容性问题
-                                ],
-                            },
-                        },
-                    },
-                    'less-loader',// 将less编译成css
-                ],
+                use: getStyleLoader('less-loader'),
             },
             {
                 test: /\.s[ac]ss$/i,
-                use: [
-                    MiniCssExtractPlugin.loader,
-                    'css-loader',
-                    {
-                        loader: "postcss-loader",
-                        options: {
-                            postcssOptions: {
-                                plugins: [
-                                    "postcss-preset-env", // 能解决大多数样式兼容性问题
-                                ],
-                            },
-                        },
-                    },
-                    'sass-loader',// 将sass编译成css
-                ],
+                use: getStyleLoader('sass-loader'),
             },
             {
                 test: /\.stylus$/i,
-                use: [
-                    MiniCssExtractPlugin.loader,
-                    'css-loader',
-                    {
-                        loader: "postcss-loader",
-                        options: {
-                            postcssOptions: {
-                                plugins: [
-                                    "postcss-preset-env", // 能解决大多数样式兼容性问题
-                                ],
-                            },
-                        },
-                    },
-                    'stylus-loader',// 将stylus编译成css
-                ],
+                use: getStyleLoader('stylus-loader'),
             },
             // 处理图片资源
             {
@@ -148,8 +113,10 @@ module.exports = {
             // 定义输出文件名和目录
             filename: "static/css/main.css",
         }),
+        // css压缩
+        new CssMinimizerPlugin(),
     ],
     // 模块
-    mode: 'production'
+    mode: 'production' // 生成模式自动开启html和JS压缩
 
 }
